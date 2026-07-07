@@ -1,3 +1,6 @@
 fastapi
 pytest
 sqlalchemy
+alembic
+dotenv
+psycopg[binary,pool]
