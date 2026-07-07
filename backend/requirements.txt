@@ -4,3 +4,9 @@ sqlalchemy
 alembic
 dotenv
 psycopg[binary,pool]
+ruff
+task.py
+uvicorn[standard]
+pwdlib
+pydantic[email]
+pwdlib[argon2]
