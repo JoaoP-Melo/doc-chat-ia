@@ -10,3 +10,4 @@ uvicorn[standard]
 pwdlib
 pydantic[email]
 pwdlib[argon2]
+PyJWT
