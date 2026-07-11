@@ -30,7 +30,7 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 @router.post(
-    "/user_registration/", status_code=HTTPStatus.OK, response_model=PublicUser
+    "/user_registration/", status_code=HTTPStatus.CREATED, response_model=PublicUser
 )
 def user_registration(user: PrivateUser, session: Session = Depends(get_db)):
 

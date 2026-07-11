@@ -41,10 +41,10 @@ def validate_user_registration_credentials(user: PrivateUser, session: Session):
                 detail="Email already exists",
             )
 
-        if user.password1 != user.password2:
-            raise HTTPException(
-                status_code=HTTPStatus.UNAUTHORIZED,
-                detail="The passwords are different.",
+    if user.password1 != user.password2:
+        raise HTTPException(
+            status_code=HTTPStatus.UNAUTHORIZED,
+            detail="The passwords are different.",
             )
 
 
