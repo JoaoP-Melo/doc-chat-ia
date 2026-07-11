@@ -33,7 +33,6 @@ extend-immutable-calls = [
 [tool.pytest.ini_options]
 pythonpath = "."
 addopts = "-p no:warnings"
-asyncio_mode = "auto"
 
 [tool.taskipy.tasks]
 api = "uvicorn app.main:app --reload"
