@@ -10,6 +10,7 @@ from app.auth.models import Users, AuthSessions
 from app.core.database import TestSessionLocal, get_db
 from app.main import app
 from app.auth.service import get_password_hash
+from app.core.security import create_token
 
 @pytest.fixture
 def session():
@@ -48,6 +49,7 @@ def add_user_in_db(session):
             Users.email == 'test@example.com'
             )
         )
+    
     return user
 
 
@@ -64,3 +66,32 @@ def add_auth_session_in_db(add_user_in_db, session):
         )
     )
     session.commit
+
+    auth_session = session.scalar(
+        select(AuthSessions).where(
+            AuthSessions.refresh_token_hash == key_hash
+            )
+        )
+    
+    return {
+        "auth_session":auth_session, 
+        "key": key
+        }
+
+
+@pytest.fixture
+def access_token(add_user_in_db):
+    return create_token(
+        data={
+            "email": add_user_in_db.email,
+            "id": add_user_in_db.id,
+        }
+    )
+
+
+@pytest.fixture
+def refresh_token(add_auth_session_in_db: dict):
+    return create_token(
+        data={"key": add_auth_session_in_db.get("key")}
+    )
+
