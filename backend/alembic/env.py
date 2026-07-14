@@ -9,6 +9,8 @@ from sqlalchemy import engine_from_config, pool
 from alembic import context
 from app.core.database import Base
 from app.auth.models import Users, AuthSessions
+from app.conversation.models import Conversations, Messages
+from app.document.models import Documents, DocumentsChunks
 
 load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
