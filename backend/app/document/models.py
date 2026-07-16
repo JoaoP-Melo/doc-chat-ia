@@ -30,7 +30,7 @@ class DocumentsChunks(Base):
     )
     chunk_index: Mapped[int] = mapped_column(Integer, nullable=False)
     chunk_text: Mapped[str] = mapped_column(Text, nullable=False)
-    embedding = mapped_column(Vector(1536), nullable=False)
+    embedding = mapped_column(Vector(384), nullable=False)
     creat_at: Mapped[datetime] = mapped_column(
         DateTime, 
         default=datetime.now(UTC),
