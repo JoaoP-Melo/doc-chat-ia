@@ -3,7 +3,7 @@ from http import HTTPStatus
 import os
 
 from dotenv import load_dotenv
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Cookie
 from fastapi.security import (
     HTTPAuthorizationCredentials,
     HTTPBearer,
@@ -35,18 +35,18 @@ def create_token(data: dict):
 
 
 def get_current_user(
-    encoded_token: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
-    session: Session = Depends(get_db),
+    access_token: str | None = Cookie(default=None),
+    session: Session = Depends(get_db)
 ):
-
     try:
-        payload = decode(encoded_token.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
         subject_id = payload.get("id")
 
         if not subject_id:
             raise HTTPException(
                 status_code=HTTPStatus.UNAUTHORIZED, detail="id not found"
             )
+        
     except DecodeError:
         raise HTTPException(
             status_code=HTTPStatus.UNAUTHORIZED, detail="Could not validate credentials"

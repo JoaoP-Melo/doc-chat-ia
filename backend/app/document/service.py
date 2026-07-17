@@ -7,14 +7,14 @@ def create_chunks(
     len_chunk: int = 500,
     overlap: int = 100
 ):
-    inicio = 0
+    start = 0
 
-    while inicio < len(texto):
-        fim = inicio + len_chunk
+    while start < len(texto):
+        fim = start + len_chunk
 
-        yield texto[inicio:fim]
+        yield texto[start:fim]
 
-        inicio += len_chunk - overlap
+        start += len_chunk - overlap
 
 
 def process_docs(documento_id: int, text: str, session):
