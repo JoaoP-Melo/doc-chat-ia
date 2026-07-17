@@ -1,16 +1,16 @@
-import secrets
 import hashlib
+import secrets
 
 from fastapi.testclient import TestClient
-from sqlalchemy import select
 import pytest
+from sqlalchemy import select
 
-from app.auth.schemas import PrivateUser
-from app.auth.models import Users, AuthSessions
-from app.core.database import TestSessionLocal, get_db
-from app.main import app
+from app.auth.models import AuthSessions, Users
 from app.auth.service import get_password_hash
+from app.core.database import TestSessionLocal, get_db
 from app.core.security import create_token
+from app.main import app
+
 
 @pytest.fixture
 def session():
@@ -20,11 +20,12 @@ def session():
         session.query(AuthSessions).delete()
         session.commit()
 
+
 @pytest.fixture
 def client_override(session):
     def get_db_override():
         yield session
-    
+
     app.dependency_overrides[get_db] = get_db_override
 
     with TestClient(app) as client:
@@ -38,18 +39,15 @@ def add_user_in_db(session):
 
     session.add(
         Users(
-            username= 'testtest',
-            email= 'test@example.com',
-            password_hash= get_password_hash('testtest')
-        ))
+            username="testtest",
+            email="test@example.com",
+            password_hash=get_password_hash("testtest"),
+        )
+    )
     session.commit
 
-    user = session.scalar(
-        select(Users).where(
-            Users.email == 'test@example.com'
-            )
-        )
-    
+    user = session.scalar(select(Users).where(Users.email == "test@example.com"))
+
     return user
 
 
@@ -61,22 +59,17 @@ def add_auth_session_in_db(add_user_in_db, session):
 
     session.add(
         AuthSessions(
-            user_id= add_user_in_db.id,
-            refresh_token_hash= key_hash,
+            user_id=add_user_in_db.id,
+            refresh_token_hash=key_hash,
         )
     )
     session.commit
 
     auth_session = session.scalar(
-        select(AuthSessions).where(
-            AuthSessions.refresh_token_hash == key_hash
-            )
-        )
-    
-    return {
-        "auth_session":auth_session, 
-        "key": key
-        }
+        select(AuthSessions).where(AuthSessions.refresh_token_hash == key_hash)
+    )
+
+    return {"auth_session": auth_session, "key": key}
 
 
 @pytest.fixture
@@ -91,7 +84,4 @@ def access_token(add_user_in_db):
 
 @pytest.fixture
 def refresh_token(add_auth_session_in_db: dict):
-    return create_token(
-        data={"key": add_auth_session_in_db.get("key")}
-    )
-
+    return create_token(data={"key": add_auth_session_in_db.get("key")})

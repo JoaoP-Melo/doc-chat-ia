@@ -45,7 +45,7 @@ def validate_user_registration_credentials(user: PrivateUser, session: Session):
         raise HTTPException(
             status_code=HTTPStatus.UNAUTHORIZED,
             detail="The passwords are different.",
-            )
+        )
 
 
 def add_user_in_db(user: PrivateUser, session: Session):

@@ -1,9 +1,11 @@
 from datetime import UTC, datetime
+
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
+
 
 class Documents(Base):
     __tablename__ = "documents"
@@ -15,7 +17,7 @@ class Documents(Base):
     name: Mapped[str] = mapped_column(String(256), nullable=False)
     extension: Mapped[str] = mapped_column(String(10), nullable=False)
     creat_at: Mapped[datetime] = mapped_column(
-        DateTime, 
+        DateTime,
         default=datetime.now(UTC),
         nullable=False,
     )
@@ -32,7 +34,7 @@ class DocumentsChunks(Base):
     chunk_text: Mapped[str] = mapped_column(Text, nullable=False)
     embedding = mapped_column(Vector(384), nullable=False)
     creat_at: Mapped[datetime] = mapped_column(
-        DateTime, 
+        DateTime,
         default=datetime.now(UTC),
         nullable=False,
     )

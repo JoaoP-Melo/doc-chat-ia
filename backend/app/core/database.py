@@ -15,7 +15,7 @@ SessionLocal = sessionmaker(bind=engine)
 test_engine = create_engine(TEST_DATABASE_URL)
 TestSessionLocal = sessionmaker(bind=test_engine)
 
+
 def get_db():
     with SessionLocal() as session:
         yield session
-

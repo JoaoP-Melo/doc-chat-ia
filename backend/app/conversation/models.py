@@ -5,6 +5,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
 
+
 class Conversations(Base):
     __tablename__ = "conversations"
 
@@ -17,7 +18,7 @@ class Conversations(Base):
     )
     title: Mapped[str] = mapped_column(String(256), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, 
+        DateTime,
         default=datetime.now(UTC),
         nullable=False,
     )
@@ -33,7 +34,7 @@ class Messages(Base):
     role: Mapped[str] = mapped_column(String(256), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, 
+        DateTime,
         default=datetime.now(UTC),
         nullable=False,
     )

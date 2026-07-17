@@ -1,90 +1,61 @@
-from fastapi import APIRouter, UploadFile, Depends, HTTPException
 from http import HTTPStatus
-from pypdf import PdfReader
 from io import BytesIO
-from sqlalchemy import select, delete
-from app.document.service import process_docs
-from app.core.database import get_db
-from app.document.models import Documents, DocumentsChunks
-from app.core.security import get_current_user
 
+from fastapi import APIRouter, Depends, HTTPException, UploadFile
+from sqlalchemy import delete, select
+
+from app.core.database import get_db
+from app.core.security import get_current_user
+from app.document.models import Documents, DocumentsChunks
+from app.document.service import (
+    process_docs, 
+    get_file_extension, 
+    add_documents_in_db,
+    extract_file_text,
+    delete_file_in_db,
+    get_files_in_db
+)
 
 router = APIRouter(prefix="/document", tags=["Document"])
 
 
 @router.post("/upload_file", status_code=HTTPStatus.OK)
 async def upload_file(
-    file: UploadFile, 
-    session = Depends(get_db), 
-    current_user = Depends(get_current_user)
-    ):
+    file: UploadFile, session=Depends(get_db), current_user=Depends(get_current_user)
+):
+    extension = get_file_extension(file.filename)
 
-    extensions = file.filename.split('.')
-
-    new_document = Documents(
-        user_id=current_user.id ,
-        name=file.filename,
-        extension=extensions[-1]
+    new_document = add_documents_in_db(
+        user_id=current_user.id,
+        file_name=file.filename,
+        file_extension=extension,
+        session=session
     )
 
-    session.add(new_document)
-    session.commit()
-    session.refresh(new_document)
+    text = await extract_file_text(file=file)
 
-    content = await file.read()
-    pdf = PdfReader(BytesIO(content))
-    text = ''
+    process_docs(documento_id=new_document.id, file_text=text, session=session)
 
-    for page in pdf.pages:
-        text += page.extract_text()
-
-    process_docs(new_document.id, text, session)
-
-    return {
-        "Message": "File Saved"
-    }
+    return {"Message": "File Saved"}
 
 
 @router.delete("/delete_file", status_code=HTTPStatus.OK)
 def delete_file(
-    document_id: int,
-    session = Depends(get_db), 
-    current_user = Depends(get_current_user)
-    ):
-
-    document_in_db = session.scalar(select(Documents).where(
-        Documents.id == document_id,
-        Documents.user_id == current_user.id,
-    ))
-
-    if not document_in_db:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Document Not Found"
-        )
-    
-
-    session.execute(delete(DocumentsChunks).where(
-        DocumentsChunks.document_id == document_id,
-        )
+    document_id: int, session=Depends(get_db), current_user=Depends(get_current_user)
+):
+    delete_file_in_db(
+        document_id=document_id,
+        user_id=current_user.id,
+        session=session
     )
-    session.delete(document_in_db)
-    session.commit()
 
+    return {"Message": "File Deleted"}
 
-    return {
-        "Message": "File Deleted"
-    }
 
 @router.get("/delete_file", status_code=HTTPStatus.OK)
-def delete_file(
-    session = Depends(get_db), 
-    current_user = Depends(get_current_user)
-    ):
+def read_files(session=Depends(get_db), current_user=Depends(get_current_user)):
+    documents_in_db = get_files_in_db(
+        user_id=current_user.id,
+        session=session)
 
-    documents_in_db = session.scalars(select(Documents).where(
-        Documents.user_id == current_user.id
-    )).all()
-
-    return {
-        "Documents": documents_in_db
-    }
+    return {"Documents": documents_in_db}
