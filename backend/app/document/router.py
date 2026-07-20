@@ -19,7 +19,7 @@ from app.document.service import (
 router = APIRouter(prefix="/document", tags=["Document"])
 
 
-@router.post("/upload_file", status_code=HTTPStatus.OK)
+@router.post("/upload_file/", status_code=HTTPStatus.OK)
 async def upload_file(
     file: UploadFile, session=Depends(get_db), current_user=Depends(get_current_user)
 ):
@@ -39,7 +39,7 @@ async def upload_file(
     return {"Message": "File Saved"}
 
 
-@router.delete("/delete_file", status_code=HTTPStatus.OK)
+@router.delete("/delete_file/", status_code=HTTPStatus.OK)
 def delete_file(
     document_id: int, session=Depends(get_db), current_user=Depends(get_current_user)
 ):
@@ -52,7 +52,7 @@ def delete_file(
     return {"Message": "File Deleted"}
 
 
-@router.get("/delete_file", status_code=HTTPStatus.OK)
+@router.get("/read_file/", status_code=HTTPStatus.OK)
 def read_files(session=Depends(get_db), current_user=Depends(get_current_user)):
     documents_in_db = get_files_in_db(
         user_id=current_user.id,

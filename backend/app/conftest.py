@@ -6,6 +6,7 @@ import pytest
 from sqlalchemy import select
 
 from app.auth.models import AuthSessions, Users
+from app.document.models import Documents, DocumentsChunks
 from app.auth.service import get_password_hash
 from app.core.database import TestSessionLocal, get_db
 from app.core.security import create_token
@@ -18,6 +19,8 @@ def session():
         yield session
         session.query(Users).delete()
         session.query(AuthSessions).delete()
+        session.query(Documents).delete()
+        session.query(DocumentsChunks).delete()
         session.commit()
 
 
@@ -44,7 +47,7 @@ def add_user_in_db(session):
             password_hash=get_password_hash("testtest"),
         )
     )
-    session.commit
+    session.commit()
 
     user = session.scalar(select(Users).where(Users.email == "test@example.com"))
 
@@ -63,7 +66,7 @@ def add_auth_session_in_db(add_user_in_db, session):
             refresh_token_hash=key_hash,
         )
     )
-    session.commit
+    session.commit()
 
     auth_session = session.scalar(
         select(AuthSessions).where(AuthSessions.refresh_token_hash == key_hash)
@@ -85,3 +88,20 @@ def access_token(add_user_in_db):
 @pytest.fixture
 def refresh_token(add_auth_session_in_db: dict):
     return create_token(data={"key": add_auth_session_in_db.get("key")})
+
+
+@pytest.fixture
+def add_document_in_db(add_user_in_db, session):
+
+    session.add(
+        Documents(
+            user_id=add_user_in_db.id,
+            name="test document",
+            extension="test",
+        )
+    )
+    session.commit()
+
+    document = session.scalar(select(Documents).where(Documents.name == "test document"))
+
+    return document
