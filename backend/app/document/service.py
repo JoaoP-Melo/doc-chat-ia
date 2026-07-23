@@ -1,13 +1,13 @@
-from io import BytesIO
 from http import HTTPStatus
+from io import BytesIO
 
-from sentence_transformers import SentenceTransformer
-from sqlalchemy.orm import Session
-from pypdf import PdfReader
-from sqlalchemy import select, delete
 from fastapi import HTTPException
+from pypdf import PdfReader
+from sentence_transformers import SentenceTransformer
+from sqlalchemy import delete, select
+from sqlalchemy.orm import Session
 
-from app.document.models import DocumentsChunks, Documents
+from app.document.models import Documents, DocumentsChunks
 
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
@@ -39,9 +39,9 @@ def process_docs(documento_id: int, file_text: str, session: Session):
 
 
 def get_file_extension(file_name: str):
-    names = file_name.split('.')
+    names = file_name.split(".")
 
-    return names[-1]
+    return names
 
 
 def add_documents_in_db(user_id, file_name, file_extension, session: Session):
@@ -71,7 +71,7 @@ def delete_file_in_db(document_id, user_id, session: Session):
             Documents.id == document_id,
             Documents.user_id == user_id,
         )
-    ) 
+    )
 
     if not document_in_db:
         raise HTTPException(
@@ -97,4 +97,4 @@ def get_files_in_db(user_id, session: Session):
             status_code=HTTPStatus.NOT_FOUND, detail="Documents Not Found"
         )
 
-    return delete_file_in_db
+    return documents_in_db

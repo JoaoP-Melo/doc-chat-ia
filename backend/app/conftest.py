@@ -6,10 +6,10 @@ import pytest
 from sqlalchemy import select
 
 from app.auth.models import AuthSessions, Users
-from app.document.models import Documents, DocumentsChunks
 from app.auth.service import get_password_hash
 from app.core.database import TestSessionLocal, get_db
 from app.core.security import create_token
+from app.document.models import Documents, DocumentsChunks
 from app.main import app
 
 
@@ -102,6 +102,8 @@ def add_document_in_db(add_user_in_db, session):
     )
     session.commit()
 
-    document = session.scalar(select(Documents).where(Documents.name == "test document"))
+    document = session.scalar(
+        select(Documents).where(Documents.name == "test document")
+    )
 
     return document
