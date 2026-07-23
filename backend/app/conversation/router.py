@@ -28,7 +28,7 @@ def create_conversation(
     return {"Message": "Chat created"}
 
 
-@router.post("/read_conversation/", status_code=HTTPStatus.OK)
+@router.get("/read_conversation/", status_code=HTTPStatus.OK)
 def read_conversation(
     session: Session = Depends(get_db), current_user=Depends(get_current_user)
 ):

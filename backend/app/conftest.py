@@ -7,6 +7,7 @@ from sqlalchemy import select
 
 from app.auth.models import AuthSessions, Users
 from app.auth.service import get_password_hash
+from app.conversation.models import Conversations
 from app.core.database import TestSessionLocal, get_db
 from app.core.security import create_token
 from app.document.models import Documents, DocumentsChunks
@@ -21,6 +22,7 @@ def session():
         session.query(AuthSessions).delete()
         session.query(Documents).delete()
         session.query(DocumentsChunks).delete()
+        session.query(Conversations).delete()
         session.commit()
 
 
@@ -107,3 +109,20 @@ def add_document_in_db(add_user_in_db, session):
     )
 
     return document
+
+
+@pytest.fixture
+def add_conversation_in_db(add_document_in_db, session):
+
+    session.add(
+        Conversations(
+            user_id=add_document_in_db.user_id,
+            document_id=add_document_in_db.id,
+            title=add_document_in_db.name,
+        )
+    )
+    session.commit()
+
+    conversation = session.scalar(select(Conversations))
+
+    return conversation
