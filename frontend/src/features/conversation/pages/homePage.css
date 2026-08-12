@@ -1,0 +1,78 @@
+html,
+body,
+#root {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+}
+
+section {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    width: 100%;
+    height: 25px;
+    flex-shrink: 0;
+    background: red;
+}
+
+.top {
+    display: flex;
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+}
+
+.left-column {
+    width: 15%;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+.conversation-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.conversation {
+    padding: 12px;
+    cursor: pointer;
+}
+
+.conversation:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.start {
+    width: 85%;
+    box-sizing: border-box;
+    background: #a5c8ca;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.chat-container {
+    width: 70%;
+    text-align: center;
+}
+
+.question-form {
+    display: flex;
+    width: 100%;
+}
+
+.question-form input {
+    flex: 1;
+    padding: 15px;
+}
+
+.question-form button {
+    padding: 15px 20px;
+}
