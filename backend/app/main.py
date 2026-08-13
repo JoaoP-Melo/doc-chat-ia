@@ -15,10 +15,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/test")
-def test():
-    return {"message": "API funcionando!"}
-
 app.include_router(auth_router)
 app.include_router(document_router)
 app.include_router(conversation_router)
