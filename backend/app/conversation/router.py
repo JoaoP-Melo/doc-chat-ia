@@ -5,7 +5,12 @@ from sqlalchemy.orm import Session
 
 from app.conversation.service import (
     add_conversation_in_db,
+    add_messages_in_db,
+    ask_question,
     delete_conversation_in_db,
+    get_chunks,
+    get_user_messages,
+    make_question,
     read_conversations_in_db,
 )
 from app.core.database import get_db
@@ -52,3 +57,24 @@ def delete_conversation(
     )
 
     return {"Message": "Chat deleted"}
+
+
+
+
+@router.post("/user_question/", status_code=HTTPStatus.OK)
+def user_question(
+    conversation_id: int,
+    document_id: int,
+    question: str,
+    session: Session = Depends(get_db),
+):
+
+    message_history = get_user_messages(conversation_id, session)
+    document_context = get_chunks(question, document_id, session)
+    messages = make_question(document_context, message_history, question)
+
+    output = ask_question(messages)
+
+    add_messages_in_db(question, output, session, conversation_id)
+
+    return {"Message": output}

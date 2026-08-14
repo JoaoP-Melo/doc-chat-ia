@@ -35,7 +35,7 @@ def process_docs(documento_id: int, file_text: str, session: Session):
                 embedding=embedding.tolist(),
             )
         )
-        session.commit()
+    session.commit()
 
 
 def get_file_extension(file_name: str):

@@ -16,3 +16,4 @@ pgvector
 python-multipart
 sentence-transformers
 pypdf
+openai
