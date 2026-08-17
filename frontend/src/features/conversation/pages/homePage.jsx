@@ -1,26 +1,32 @@
 import './homePage.css'
+import LogoutButton from "./LogoutButton";
+import { useEffect, useState } from "react";
 
 function HomePage(){
 
-    const conversations = 
-    [
-        {
-            id: 1,
-            titulo: "Como funciona o React?"
-        },
-        {
-            id: 2,
-            titulo: "Meu projeto de IA"
-        },
-        {
-            id: 3,
-            titulo: "Estudando FastAPI"
-        },
-        {
-            id: 4,
-            titulo: "Dúvidas sobre PostgreSQL"
+    const [chats, setChats] = useState([]);
+
+    useEffect(() => {
+        async function loadChats() {
+            const response = await fetch(
+                "http://localhost:8000/conversation/read_conversation/",
+                {
+                    method: "GET",
+                    credentials: "include"
+                }
+            );
+
+            if (!response.ok) {
+                return;
+            }
+
+            const data = await response.json();
+
+            setChats(data.Chats);
         }
-    ];
+
+        loadChats();
+    }, []);
 
     return (
         <section>
@@ -28,19 +34,16 @@ function HomePage(){
                 <div className='left-column'>
                     
                     <div className='header'>
-                        Doc Chat IA
-                        Sair
+                        Doc Chat I
+                        <LogoutButton />
                     </div>
                     <h2>Conversas</h2>
 
                     <div className="conversation-list">
 
-                        {conversations.map((conversa) => (
-                            <div
-                                className="conversation"
-                                key={conversa.id}
-                            >
-                                {conversa.titulo}
+                        {chats.map((chat) => (
+                            <div key={chat.id} className="conversation">
+                                {chat.title}
                             </div>
                         ))}
 
