@@ -17,22 +17,23 @@ from app.conversation.service import (
 from app.core.database import get_db
 from app.core.security import get_current_user
 from app.conversation.models import Messages
+from app.conversation.schemas import ConversationCreate
 
 router = APIRouter(prefix="/conversation", tags=["conversation"])
 
 
 @router.post("/create_conversation/", status_code=HTTPStatus.CREATED)
 def create_conversation(
-    document_id: int,
+    data: ConversationCreate,
     session: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
 
-    add_conversation_in_db(
-        user_id=current_user.id, document_id=document_id, session=session
+    new_conversation = add_conversation_in_db(
+        user_id=current_user.id, document_id=data.document_id, session=session
     )
 
-    return {"Message": "Chat created"}
+    return new_conversation
 
 
 @router.get("/read_conversation/", status_code=HTTPStatus.OK)

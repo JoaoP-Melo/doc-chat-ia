@@ -33,7 +33,7 @@ async def upload_file(
 
     process_docs(documento_id=new_document.id, file_text=text, session=session)
 
-    return {"Message": "File Saved"}
+    return {"id": new_document.id}
 
 
 @router.delete("/delete_file/", status_code=HTTPStatus.OK)

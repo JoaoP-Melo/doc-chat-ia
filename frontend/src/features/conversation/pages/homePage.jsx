@@ -1,33 +1,53 @@
 import './homePage.css'
 import LogoutButton from "./LogoutButton";
 import Chat from "./ChatMessages";
+import NewConversation from "./NewConversation";
 import { useEffect, useState } from "react";
 
 function HomePage(){
 
     const [chats, setChats] = useState([]);
 
-    useEffect(() => {
-        async function loadChats() {
-            const response = await fetch(
-                "http://localhost:8000/conversation/read_conversation/",
-                {
-                    method: "GET",
-                    credentials: "include"
-                }
-            );
+    async function loadChats() {
 
-            if (!response.ok) {
-                return;
+        const response = await fetch(
+            "http://localhost:8000/conversation/read_conversation/",
+            {
+                method: "GET",
+                credentials: "include"
             }
+        );
 
-            const data = await response.json();
-
-            setChats(data.Chats);
+        if (response.status === 404) {
+            setChats([]);
+            return;
         }
 
+        if (!response.ok) {
+            return;
+        }
+
+        const data = await response.json();
+
+        setChats(data.Chats);
+    }
+
+
+    useEffect(() => {
         loadChats();
     }, []);
+
+    function handleConversationCreated(newConversation) {
+        setChats((currentChats) => {
+            const alreadyExists = currentChats.some(
+                (chat) => chat.id === newConversation.id
+            );
+
+            return alreadyExists
+                ? currentChats
+                : [...currentChats, newConversation];
+        });
+    }
 
     const [selectedChat, setSelectedChat] = useState(null);
     const [messages, setMessages] = useState([]);
@@ -71,10 +91,14 @@ function HomePage(){
                     </div>
                     <h2>Conversas</h2>
 
+                        <NewConversation
+                            onConversationCreated={handleConversationCreated}
+                        />
+
                     <div className="conversation-list">
 
                         {chats.map((chat) => (
-                            <div key={chat.id} 
+                            <div key={`chat-${chat.id}`} 
                                 className="conversation"
                                 onClick={() => handleChatClick(chat.id)}>
                                 {chat.title}

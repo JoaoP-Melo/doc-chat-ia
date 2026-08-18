@@ -31,6 +31,9 @@ def add_conversation_in_db(user_id, document_id, session: Session):
 
     session.add(new_conversation)
     session.commit()
+    session.refresh(new_conversation)
+
+    return new_conversation
 
 
 def read_conversations_in_db(user_id, session: Session):
