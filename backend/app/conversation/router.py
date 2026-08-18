@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 
 from app.conversation.service import (
     add_conversation_in_db,
@@ -15,6 +16,7 @@ from app.conversation.service import (
 )
 from app.core.database import get_db
 from app.core.security import get_current_user
+from app.conversation.models import Messages
 
 router = APIRouter(prefix="/conversation", tags=["conversation"])
 
@@ -59,8 +61,6 @@ def delete_conversation(
     return {"Message": "Chat deleted"}
 
 
-
-
 @router.post("/user_question/", status_code=HTTPStatus.OK)
 def user_question(
     conversation_id: int,
@@ -78,3 +78,22 @@ def user_question(
     add_messages_in_db(question, output, session, conversation_id)
 
     return {"Message": output}
+
+
+@router.get("/user_chat/{chat_id}/")
+def get_chat_messages(
+    chat_id: int,
+    current_user = Depends(get_current_user),
+    session: Session = Depends(get_db),
+):
+    messages = session.scalars(
+    select(Messages)
+    .where(
+        Messages.conversation_id == chat_id
+    )
+    .order_by(Messages.created_at.asc())
+    ).all()
+
+    return {
+        "Messages": messages
+    }

@@ -1,5 +1,6 @@
 import './homePage.css'
 import LogoutButton from "./LogoutButton";
+import Chat from "./ChatMessages";
 import { useEffect, useState } from "react";
 
 function HomePage(){
@@ -28,6 +29,37 @@ function HomePage(){
         loadChats();
     }, []);
 
+    const [selectedChat, setSelectedChat] = useState(null);
+    const [messages, setMessages] = useState([]);
+
+    async function handleChatClick(chatId) {
+        try {
+            const response = await fetch(
+                `http://localhost:8000/conversation/user_chat/${chatId}/`,
+                {
+                    method: "GET",
+                    credentials: "include"
+                }
+            );
+
+            if (!response.ok) {
+                console.error("Erro ao buscar mensagens");
+                return;
+            }
+
+            const data = await response.json();
+
+            console.log("Resposta:", data);
+
+            setMessages(data.Messages);
+            setSelectedChat(chatId);
+
+        } catch (error) {
+            console.error("Erro:", error);
+        }
+    }
+
+
     return (
         <section>
             <div className='top'>
@@ -42,7 +74,9 @@ function HomePage(){
                     <div className="conversation-list">
 
                         {chats.map((chat) => (
-                            <div key={chat.id} className="conversation">
+                            <div key={chat.id} 
+                                className="conversation"
+                                onClick={() => handleChatClick(chat.id)}>
                                 {chat.title}
                             </div>
                         ))}
@@ -53,18 +87,24 @@ function HomePage(){
 
                 <div className='start'>
                         <div className="chat-container">
-                            <h1>Sobre o que você quer conversar?</h1>
+                                    {selectedChat ? (
+                                        <Chat messages={messages} />
+                                    ) : (
+                            <div>
+                                <h1>Sobre o que você quer conversar?</h1>
 
-                            <form className="question-form">
-                                <input
-                                    type="text"
-                                    placeholder="Faça uma pergunta..."
-                                />
+                                <form className="question-form">
+                                    <input
+                                        type="text"
+                                        placeholder="Faça uma pergunta..."
+                                    />
 
-                                <button type="submit">
-                                    Enviar
-                                </button>
-                            </form>
+                                    <button type="submit">
+                                        Enviar
+                                    </button>
+                                </form>
+                            </div>
+                        )}
                         </div>
                 </div>
             </div>
