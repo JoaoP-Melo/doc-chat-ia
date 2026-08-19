@@ -34,7 +34,7 @@ function HomePage(){
 
 
     useEffect(() => {
-        loadChats();
+        Promise.resolve().then(loadChats);
     }, []);
 
     function handleConversationCreated(newConversation) {
@@ -81,58 +81,88 @@ function HomePage(){
 
 
     return (
-        <section>
-            <div className='top'>
-                <div className='left-column'>
-                    
-                    <div className='header'>
-                        Doc Chat I
-                        <LogoutButton />
-                    </div>
-                    <h2>Conversas</h2>
+        <div className="home">
 
-                        <NewConversation
-                            onConversationCreated={handleConversationCreated}
-                        />
+            <aside className="left-column">
 
-                    <div className="conversation-list">
-
-                        {chats.map((chat) => (
-                            <div key={`chat-${chat.id}`} 
-                                className="conversation"
-                                onClick={() => handleChatClick(chat.id)}>
-                                {chat.title}
-                            </div>
-                        ))}
-
+                <div className="sidebar-header">
+                    <div className="logo">
+                        Doc Chat IA
                     </div>
 
+                    <LogoutButton />
                 </div>
 
-                <div className='start'>
-                        <div className="chat-container">
-                                    {selectedChat ? (
-                                        <Chat messages={messages} />
-                                    ) : (
-                            <div>
-                                <h1>Sobre o que você quer conversar?</h1>
+                <h2 className="conversation-title">
+                    Conversas
+                </h2>
 
-                                <form className="question-form">
-                                    <input
-                                        type="text"
-                                        placeholder="Faça uma pergunta..."
-                                    />
+                <div className="new-conversation">
+                    <NewConversation
+                        onConversationCreated={handleConversationCreated}
+                    />
+                </div>
 
-                                    <button type="submit">
-                                        Enviar
-                                    </button>
-                                </form>
-                            </div>
-                        )}
+                <div className="conversation-list">
+
+                    {chats.map((chat) => (
+                        <div
+                            key={`chat-${chat.id}`}
+                            className={`conversation ${
+                                selectedChat === chat.id ? "conversation-active" : ""
+                            }`}
+                            onClick={() => handleChatClick(chat.id)}
+                        >
+                            {chat.title}
                         </div>
+                    ))}
+
                 </div>
-            </div>
-        </section>
+
+            </aside>
+
+            <main className="start">
+
+                <div className="chat-container">
+
+                    {selectedChat ? (
+
+                        <Chat messages={messages} />
+
+                    ) : (
+
+                        <div className="empty-chat">
+
+                            <div className="empty-chat-icon">
+                                💬
+                            </div>
+
+                            <h1>
+                                Comece uma conversa
+                            </h1>
+
+                            <p>
+                                Crie uma nova conversa ou selecione uma conversa
+                                existente para começar a fazer perguntas.
+                            </p>
+
+                            <div className="empty-chat-actions">
+
+                                <NewConversation
+                                    onConversationCreated={handleConversationCreated}
+                                />
+
+                            </div>
+
+                        </div>
+
+                    )}
+
+                </div>
+
+            </main>
+
+        </div>
     )
 }
 
