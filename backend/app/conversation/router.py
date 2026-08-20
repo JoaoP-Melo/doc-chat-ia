@@ -17,7 +17,10 @@ from app.conversation.service import (
 from app.core.database import get_db
 from app.core.security import get_current_user
 from app.conversation.models import Messages
-from app.conversation.schemas import ConversationCreate
+from app.conversation.schemas import (
+    ConversationCreate, 
+    QuestionRequest
+)
 
 router = APIRouter(prefix="/conversation", tags=["conversation"])
 
@@ -48,7 +51,7 @@ def read_conversation(
     return {"Chats": conversations_in_db}
 
 
-@router.delete("/delete_conversation/", status_code=HTTPStatus.OK)
+@router.delete("/delete_conversation/{conversation_id}", status_code=HTTPStatus.OK)
 def delete_conversation(
     conversation_id: int,
     session: Session = Depends(get_db),
@@ -64,19 +67,18 @@ def delete_conversation(
 
 @router.post("/user_question/", status_code=HTTPStatus.OK)
 def user_question(
-    conversation_id: int,
-    document_id: int,
-    question: str,
+    data: QuestionRequest,
     session: Session = Depends(get_db),
+    current_user = Depends(get_current_user),
 ):
 
-    message_history = get_user_messages(conversation_id, session)
-    document_context = get_chunks(question, document_id, session)
-    messages = make_question(document_context, message_history, question)
+    message_history = get_user_messages(data.conversation_id, session)
+    document_context = get_chunks(data.question, data.conversation_id, session)
+    messages = make_question(document_context, message_history, data.question)
 
     output = ask_question(messages)
 
-    add_messages_in_db(question, output, session, conversation_id)
+    add_messages_in_db(data.question, output, session, data.conversation_id)
 
     return {"Message": output}
 

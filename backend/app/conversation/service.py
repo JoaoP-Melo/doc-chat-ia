@@ -92,13 +92,18 @@ def make_embedding(question: str):
     return question_embedding.tolist()
 
 
-def get_chunks(question: str, document_id: str, session: Session):
+def get_chunks(question: str, conversation_id: str, session: Session):
     question_embedding = make_embedding(question)
 
+    current_conversation = session.scalar(
+        select(Conversations)
+        .where(Conversations.id == conversation_id)
+        )
+    
     chunks = (
         session.execute(
             select(DocumentsChunks)
-            .where(DocumentsChunks.document_id == document_id)
+            .where(DocumentsChunks.document_id == current_conversation.document_id)
             .order_by(DocumentsChunks.embedding.cosine_distance(question_embedding))
             .limit(5)
         )

@@ -69,8 +69,6 @@ function HomePage(){
 
             const data = await response.json();
 
-            console.log("Resposta:", data);
-
             setMessages(data.Messages);
             setSelectedChat(chatId);
 
@@ -79,7 +77,42 @@ function HomePage(){
         }
     }
 
+    const handleDeleteChat = async (chatId) => {
 
+        const confirmed = window.confirm(
+        "Tem certeza que deseja excluir esta conversa?"
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `http://localhost:8000/conversation/delete_conversation/${chatId}`,
+                {
+                    method: "DELETE",
+                    credentials: "include",
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Erro ao excluir conversa");
+            }
+
+            setChats((prevChats) =>
+                prevChats.filter((chat) => chat.id !== chatId)
+            );
+
+            if (selectedChat === chatId) {
+                setSelectedChat(null);
+                setMessages([]);
+            }
+
+        } catch (error) {
+            console.error("Erro ao excluir chat:", error);
+        }
+    };
     return (
         <div className="home">
 
@@ -113,8 +146,18 @@ function HomePage(){
                             }`}
                             onClick={() => handleChatClick(chat.id)}
                         >
-                            {chat.title}
+                            <span>{chat.title}</span>
+
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteChat(chat.id);
+                                }}
+                            >
+                                x
+                            </button>
                         </div>
+                        
                     ))}
 
                 </div>
@@ -127,8 +170,11 @@ function HomePage(){
 
                     {selectedChat ? (
 
-                        <Chat messages={messages} />
-
+                        <Chat
+                            messages={messages}
+                            selectedChat={selectedChat}
+                            handleChatClick={handleChatClick()}
+                        />
                     ) : (
 
                         <div className="empty-chat">

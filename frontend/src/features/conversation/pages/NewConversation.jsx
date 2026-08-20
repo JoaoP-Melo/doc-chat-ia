@@ -26,10 +26,6 @@ function NewConversation({ onConversationCreated }) {
         try {
             setLoading(true);
 
-            // =================================
-            // 1. CRIAR O DOCUMENTO
-            // =================================
-
             const formData = new FormData();
 
             formData.append("file", file);
@@ -54,9 +50,6 @@ function NewConversation({ onConversationCreated }) {
 
             const documentId = documentData.id;
 
-            // =================================
-            // 2. CRIAR A CONVERSA
-            // =================================
 
             const conversationResponse = await fetch(
                 "http://localhost:8000/conversation/create_conversation/",
@@ -95,7 +88,6 @@ function NewConversation({ onConversationCreated }) {
 
             setLoading(false);
 
-            // Permite selecionar novamente o mesmo arquivo
             event.target.value = "";
         }
     }
