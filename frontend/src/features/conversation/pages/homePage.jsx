@@ -2,6 +2,7 @@ import './homePage.css'
 import LogoutButton from "./LogoutButton";
 import Chat from "./ChatMessages";
 import NewConversation from "./NewConversation";
+import { apiFetch } from "../services/api";
 import { useEffect, useState } from "react";
 
 function HomePage(){
@@ -10,12 +11,14 @@ function HomePage(){
 
     async function loadChats() {
 
-        const response = await fetch(
-            "http://localhost:8000/conversation/read_conversation/",
-            {
+        var options = {
                 method: "GET",
                 credentials: "include"
-            }
+        }
+
+        const response = await apiFetch(
+            "conversation/read_conversation/",
+            options   
         );
 
         if (response.status === 404) {
@@ -54,12 +57,15 @@ function HomePage(){
 
     async function handleChatClick(chatId) {
         try {
-            const response = await fetch(
-                `http://localhost:8000/conversation/user_chat/${chatId}/`,
-                {
+
+            var options = {
                     method: "GET",
                     credentials: "include"
-                }
+            }
+
+            const response = await apiFetch(
+                `conversation/user_chat/${chatId}/`,
+                options
             );
 
             if (!response.ok) {
@@ -88,12 +94,15 @@ function HomePage(){
         }
 
         try {
-            const response = await fetch(
-                `http://localhost:8000/conversation/delete_conversation/${chatId}`,
-                {
+
+             var options = {
                     method: "DELETE",
                     credentials: "include",
-                }
+            }
+
+            const response = await apiFetch(
+                `conversation/delete_conversation/${chatId}`,
+                options
             );
 
             if (!response.ok) {
@@ -173,7 +182,7 @@ function HomePage(){
                         <Chat
                             messages={messages}
                             selectedChat={selectedChat}
-                            handleChatClick={handleChatClick()}
+                            handleChatClick={handleChatClick}
                         />
                     ) : (
 

@@ -14,7 +14,8 @@ from app.document.models import Documents, DocumentsChunks
 model = SentenceTransformer("all-MiniLM-L6-v2")
 load_dotenv()
 API_KEY = os.getenv("API_KEY")
-
+BASE_URL = os.getenv("BASE_URL")
+MODEL = os.getenv("MODEL")
 
 def add_conversation_in_db(user_id, document_id, session: Session):
     document_in_db = session.scalar(
@@ -41,11 +42,6 @@ def read_conversations_in_db(user_id, session: Session):
         select(Conversations).where(Conversations.user_id == user_id)
     ).all()
 
-    if len(conversations_in_db) == 0:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Conversation Not Found"
-        )
-
     return conversations_in_db
 
 
@@ -58,7 +54,8 @@ def delete_conversation_in_db(conversation_id, user_id, session: Session):
 
     if not conversation_in_db:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Conversation Not Found"
+            status_code=HTTPStatus.NOT_FOUND,
+              detail="Conversation not found"
         )
 
     session.delete(conversation_in_db)
@@ -137,10 +134,10 @@ def make_question(document_context, message_history, question):
 
 
 def ask_question(messages):
-    client = OpenAI(api_key=API_KEY, base_url="https://api.groq.com/openai/v1")
+    client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
     response = client.chat.completions.create(
-        model="openai/gpt-oss-20b", messages=messages
+        model=MODEL, messages=messages
     )
 
     return response.choices[0].message.content

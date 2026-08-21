@@ -51,36 +51,32 @@ def user_login(
     user_validated = validate_user_login_credentials(data, session)
 
     access_token = create_token(
-        data={"email": user_validated["email"], "id": user_validated["id"]}
+        data={"id": user_validated["id"]}
     )
     refresh_token = create_refresh_token(data.email, session)
 
     set_cookies(response, access_token, refresh_token)
-
-    """excluir session caso exista e criar outra"""
 
     return {"Message": "Login successful"}
 
 
 @router.post("/refresh_token/", status_code=HTTPStatus.OK)
 def refresh_token(
-    response: Response,
+    response: Response, 
     session: Session = Depends(get_db),
-    access_token: str | None = Cookie(default=None),
     refresh_token: str | None = Cookie(default=None),
 ):
-
-    subject_id, subject_email = decode_access_token(access_token)
+    
     subject_key_hash = decode_refresh_token(refresh_token)
 
-    validate_user_session(subject_id, subject_key_hash, session, response)
+    subject_id = validate_user_session(subject_key_hash, session, response)
 
     access_token = create_token(
         data={
-            "email": subject_email,
             "id": subject_id,
         }
     )
+
     refresh_token = update_refresh_token(subject_key_hash, subject_id, session)
 
     set_cookies(response, access_token, refresh_token)

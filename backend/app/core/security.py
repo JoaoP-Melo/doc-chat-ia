@@ -42,20 +42,22 @@ def get_current_user(
 
         if not subject_id:
             raise HTTPException(
-                status_code=HTTPStatus.UNAUTHORIZED, detail="id not found"
+                status_code=HTTPStatus.UNAUTHORIZED, 
+                detail="Could not validate credentials"
             )
 
     except DecodeError:
         raise HTTPException(
-            status_code=HTTPStatus.UNAUTHORIZED, detail="Could not validate credentials"
+            status_code=HTTPStatus.UNAUTHORIZED, 
+            detail="Could not validate credentials"
         )
 
     current_user = session.scalar(select(Users).where(Users.id == subject_id))
 
     if not current_user:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND,
-            detail="User not found",
+            status_code=HTTPStatus.UNAUTHORIZED,
+            detail="Could not validate credentials",
         )
 
     return current_user

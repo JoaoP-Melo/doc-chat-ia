@@ -1,14 +1,16 @@
 import { useNavigate } from "react-router-dom";
+import { apiFetch } from "../services/api";
 
 function LogoutButton() {
     const navigate = useNavigate();
 
     async function handleLogout() {
         try {
-            const response = await fetch("http://localhost:8000/auth/user_logout/", {
+            var options = {
                 method: "DELETE",
                 credentials: "include"
-            });
+            }
+            const response = await apiFetch("auth/user_logout/", options);
 
             if (response.ok) {
                 navigate("/login/");

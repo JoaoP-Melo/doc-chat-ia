@@ -44,7 +44,7 @@ def validate_user_registration_credentials(user: PrivateUser, session: Session):
     if user.password1 != user.password2:
         raise HTTPException(
             status_code=HTTPStatus.UNAUTHORIZED,
-            detail="The passwords are different.",
+            detail="Passwords do not match",
         )
 
 
@@ -66,14 +66,14 @@ def validate_user_login_credentials(data: RequestLogin, session: Session):
 
     if user_in_db is None:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND,
-            detail="Email not found",
+            status_code=HTTPStatus.UNAUTHORIZED,
+            detail="Invalid email or password",
         )
 
     if not verify_password(data.password, user_in_db.password_hash):
         raise HTTPException(
             status_code=HTTPStatus.UNAUTHORIZED,
-            detail="Incorrect password",
+            detail="Invalid email or password",
         )
 
     return {
@@ -129,7 +129,8 @@ def decode_access_token(access_token):
 
     if not access_token:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Access token not found"
+            status_code=HTTPStatus.UNAUTHORIZED, 
+            detail="Access token not found"
         )
 
     payload = decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -143,7 +144,8 @@ def decode_refresh_token(refresh_token):
 
     if not refresh_token:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Refresh token not found"
+            status_code=HTTPStatus.UNAUTHORIZED, 
+            detail="Refresh token not found"
         )
 
     payload = decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -154,12 +156,11 @@ def decode_refresh_token(refresh_token):
     return subject_key_hash
 
 
-def validate_user_session(user_id, key_hash, session: Session, response: Response):
+def validate_user_session(key_hash, session: Session, response: Response):
 
     existing_session = session.scalar(
         select(AuthSessions).where(
             AuthSessions.refresh_token_hash == key_hash,
-            AuthSessions.user_id == int(user_id),
         )
     )
 
@@ -169,7 +170,8 @@ def validate_user_session(user_id, key_hash, session: Session, response: Respons
             response.delete_cookie("refresh_token")
 
             raise HTTPException(
-                status_code=HTTPStatus.UNAUTHORIZED, detail="Token revoked"
+                status_code=HTTPStatus.UNAUTHORIZED, 
+                detail="Token revoked"
             )
 
         if existing_session.expires_at <= datetime.now():
@@ -177,15 +179,19 @@ def validate_user_session(user_id, key_hash, session: Session, response: Respons
             response.delete_cookie("refresh_token")
 
             raise HTTPException(
-                status_code=HTTPStatus.UNAUTHORIZED, detail="Token expired"
+                status_code=HTTPStatus.UNAUTHORIZED, 
+                detail="Token expired"
             )
     else:
         response.delete_cookie("access_token")
         response.delete_cookie("refresh_token")
 
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Refresh token not founddd"
+            status_code=HTTPStatus.UNAUTHORIZED, 
+            detail="Invalid token"
         )
+
+    return existing_session.user_id
 
 
 def update_refresh_token(key_hash, user_id, session):

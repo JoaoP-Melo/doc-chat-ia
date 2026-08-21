@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { useEffect, useRef } from "react";
+import { apiFetch } from "../services/api";
 
 function Chat({ messages, selectedChat, handleChatClick }) {
 
@@ -31,9 +32,8 @@ function Chat({ messages, selectedChat, handleChatClick }) {
         setLoading(true);
 
         try {
-            const response = await fetch(
-                "http://localhost:8000/conversation/user_question/",
-                {
+
+            var options = {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -43,7 +43,11 @@ function Chat({ messages, selectedChat, handleChatClick }) {
                         conversation_id: Number(selectedChat),
                         question: question,
                     }),
-                }
+            }
+
+            await apiFetch(
+                "conversation/user_question/",
+                options
             );
 
             setQuestion("");

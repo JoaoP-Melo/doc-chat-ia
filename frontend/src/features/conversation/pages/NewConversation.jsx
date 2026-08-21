@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { apiFetch } from "../services/api";
 
 function NewConversation({ onConversationCreated }) {
 
@@ -30,13 +31,14 @@ function NewConversation({ onConversationCreated }) {
 
             formData.append("file", file);
 
-            const documentResponse = await fetch(
-                "http://localhost:8000/document/upload_file/",
-                {
+            var optionsDocuments = {
                     method: "POST",
                     credentials: "include",
                     body: formData
                 }
+            const documentResponse = await apiFetch(
+                "document/upload_file/",
+                optionsDocuments
             );
 
             if (!documentResponse.ok) {
@@ -50,10 +52,7 @@ function NewConversation({ onConversationCreated }) {
 
             const documentId = documentData.id;
 
-
-            const conversationResponse = await fetch(
-                "http://localhost:8000/conversation/create_conversation/",
-                {
+            var optionsConversation =  {
                     method: "POST",
                     credentials: "include",
                     headers: {
@@ -63,6 +62,10 @@ function NewConversation({ onConversationCreated }) {
                         document_id: Number(documentId)
                     })
                 }
+
+            const conversationResponse = await apiFetch(
+                "conversation/create_conversation/",
+                optionsConversation
             );
 
             if (!conversationResponse.ok) {

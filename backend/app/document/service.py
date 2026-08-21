@@ -75,7 +75,8 @@ def delete_file_in_db(document_id, user_id, session: Session):
 
     if not document_in_db:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Document Not Found"
+            status_code=HTTPStatus.NOT_FOUND, 
+            detail="Document not found"
         )
 
     session.execute(
@@ -91,10 +92,5 @@ def get_files_in_db(user_id, session: Session):
     documents_in_db = session.scalars(
         select(Documents).where(Documents.user_id == user_id)
     ).all()
-
-    if not documents_in_db:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Documents Not Found"
-        )
 
     return documents_in_db
