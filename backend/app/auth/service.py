@@ -12,7 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.auth.models import AuthSessions, Users
-from app.auth.schemas import PrivateUser, RequestLogin
+from app.auth.schemas import FormRegister, RequestLogin
 from app.core.security import create_token
 
 load_dotenv()
@@ -30,7 +30,7 @@ def verify_password(password: str, hashed_password: str):
     return pwd_context.verify(password, hashed_password)
 
 
-def validate_user_registration_credentials(user: PrivateUser, session: Session):
+def validate_user_registration_credentials(user: FormRegister, session: Session):
 
     user_in_db = session.scalar(select(Users).where(Users.email == user.email))
 
@@ -48,7 +48,7 @@ def validate_user_registration_credentials(user: PrivateUser, session: Session):
         )
 
 
-def add_user_in_db(user: PrivateUser, session: Session):
+def add_user_in_db(user: FormRegister, session: Session):
 
     hashed_password = get_password_hash(user.password1)
     new_user = Users(
@@ -145,7 +145,7 @@ def decode_refresh_token(refresh_token):
     if not refresh_token:
         raise HTTPException(
             status_code=HTTPStatus.UNAUTHORIZED, 
-            detail="Refresh token not found"
+            detail="Token not found"
         )
 
     payload = decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])

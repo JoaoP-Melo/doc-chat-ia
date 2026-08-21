@@ -1,4 +1,4 @@
-import './loginPage.css'
+import "../style/auth.css";
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import { useNavigate } from "react-router-dom";
@@ -28,8 +28,8 @@ function LoginPage() {
             }
         );
 
-        if (response.status === 401 || response.status === 404) {
-            setError("Usuário ou senha incorretos.");
+        if (response.status !== 200) {
+            alert("Usuário ou senha incorretos.");
             return;
         }
 

@@ -1,6 +1,7 @@
-import './registerPage.css'
+import "../style/auth.css";
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
+import { useNavigate } from "react-router-dom";
 
 const upperWord = [
   'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 
@@ -47,6 +48,7 @@ function matchingPasswords(pass1, pass2) {
 }
 
 function RegisterPage() {
+    const navigate = useNavigate();
     const [username, setUsername] = useState('')
     const [email, setEmail] = useState('')
     const [password1, setPassword1] = useState('')
@@ -80,9 +82,14 @@ function RegisterPage() {
             }
         );
 
-        const data = await response.json();
+        if (response.status != 201) {
+            alert("E-mail já cadastrado ou sua senha não segue o padrão");
+        }
 
-        console.log(data);
+        if (response.status === 201) {
+            alert("Conta criada com sucesso!");
+            navigate("/login");
+        }
     }
 
     return (
@@ -147,8 +154,8 @@ function RegisterPage() {
                     disabled={
                     username.length === 0 ||
                     email.length === 0 ||
-                    password1.length === 0 ||
-                    password2.length === 0
+                    password1.length < 7 ||
+                    password2.length < 7
                     }
                 >
                     Confirmar

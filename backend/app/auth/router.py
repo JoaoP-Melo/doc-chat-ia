@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from fastapi import APIRouter, Cookie, Depends, Response
 from sqlalchemy.orm import Session
 
-from app.auth.schemas import PrivateUser, PublicUser, RequestLogin
+from app.auth.schemas import FormRegister, PublicUser, RequestLogin
 from app.auth.service import (
     add_user_in_db,
     create_refresh_token,
@@ -32,7 +32,7 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 @router.post(
     "/user_registration/", status_code=HTTPStatus.CREATED, response_model=PublicUser
 )
-def user_registration(user: PrivateUser, session: Session = Depends(get_db)):
+def user_registration(user: FormRegister, session: Session = Depends(get_db)):
 
     validate_user_registration_credentials(user, session)
     add_user_in_db(user, session)
@@ -57,7 +57,6 @@ def user_login(
 
     set_cookies(response, access_token, refresh_token)
 
-    return {"Message": "Login successful"}
 
 
 @router.post("/refresh_token/", status_code=HTTPStatus.OK)
@@ -81,7 +80,6 @@ def refresh_token(
 
     set_cookies(response, access_token, refresh_token)
 
-    return {"Message": "Token updated"}
 
 
 @router.delete("/user_logout/", status_code=HTTPStatus.OK)
@@ -99,5 +97,3 @@ def logout_user(
 
     response.delete_cookie("access_token")
     response.delete_cookie("refresh_token")
-
-    return {"Message": "Logout successful"}
