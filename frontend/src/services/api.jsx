@@ -1,6 +1,6 @@
 const API_URL = "http://localhost:8000/";
 
-export async function apiFetch(endpoint, options = {}) {
+async function apiFetch(endpoint, options = {}) {
     let response = await fetch(`${API_URL}${endpoint}`, {
         ...options,
         credentials: "include",
@@ -30,4 +30,5 @@ export async function apiFetch(endpoint, options = {}) {
     return response;
 }
 
-export default apiFetch;
+export default apiFetch
+

@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { apiFetch } from "../services/api";
+import apiFetch from "../../../services/api";
 
 function NewConversation({ onConversationCreated }) {
 
@@ -45,11 +45,8 @@ function NewConversation({ onConversationCreated }) {
                 throw new Error("Erro ao criar documento.");
             }
 
-            const documentData =
-                await documentResponse.json();
-
-            console.log("Documento criado:", documentData);
-
+            const documentData = await documentResponse.json();
+      
             const documentId = documentData.id;
 
             var optionsConversation =  {

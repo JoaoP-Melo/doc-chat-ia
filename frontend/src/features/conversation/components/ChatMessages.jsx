@@ -1,7 +1,7 @@
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { useEffect, useRef } from "react";
-import { apiFetch } from "../services/api";
+import apiFetch from "../../../services/api";
 
 function Chat({ messages, selectedChat, handleChatClick }) {
 

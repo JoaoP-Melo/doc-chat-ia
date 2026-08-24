@@ -1,8 +1,8 @@
-import './homePage.css'
-import LogoutButton from "./LogoutButton";
-import Chat from "./ChatMessages";
-import NewConversation from "./NewConversation";
-import { apiFetch } from "../services/api";
+import '../style/conversation.css'
+import LogoutButton from "../../auth/services/LogoutButton";
+import Chat from "../components/ChatMessages";
+import NewConversation from "../components/NewConversation";
+import { getChatMessages, getChats, deleteConversation } from "../services/conversationService";
 import { useEffect, useState } from "react";
 
 function HomePage(){
@@ -10,34 +10,16 @@ function HomePage(){
     const [chats, setChats] = useState([]);
 
     async function loadChats() {
-
-        var options = {
-                method: "GET",
-                credentials: "include"
+        try {
+            const chats = await getChats();
+            setChats(chats);
+        } catch (error) {
+            console.error(error);
         }
-
-        const response = await apiFetch(
-            "conversation/read_conversation/",
-            options   
-        );
-
-        if (response.status === 404) {
-            setChats([]);
-            return;
-        }
-
-        if (!response.ok) {
-            return;
-        }
-
-        const data = await response.json();
-
-        setChats(data.Chats);
     }
 
-
     useEffect(() => {
-        Promise.resolve().then(loadChats);
+        loadChats();
     }, []);
 
     function handleConversationCreated(newConversation) {
@@ -57,25 +39,9 @@ function HomePage(){
 
     async function handleChatClick(chatId) {
         try {
+            const messages = await getChatMessages(chatId);
 
-            var options = {
-                    method: "GET",
-                    credentials: "include"
-            }
-
-            const response = await apiFetch(
-                `conversation/user_chat/${chatId}/`,
-                options
-            );
-
-            if (!response.ok) {
-                console.error("Erro ao buscar mensagens");
-                return;
-            }
-
-            const data = await response.json();
-
-            setMessages(data.Messages);
+            setMessages(messages);
             setSelectedChat(chatId);
 
         } catch (error) {
@@ -83,31 +49,9 @@ function HomePage(){
         }
     }
 
-    const handleDeleteChat = async (chatId) => {
-
-        const confirmed = window.confirm(
-        "Tem certeza que deseja excluir esta conversa?"
-        );
-
-        if (!confirmed) {
-            return;
-        }
-
+    async function handleDeleteChat(chatId) {
         try {
-
-             var options = {
-                    method: "DELETE",
-                    credentials: "include",
-            }
-
-            const response = await apiFetch(
-                `conversation/delete_conversation/${chatId}`,
-                options
-            );
-
-            if (!response.ok) {
-                throw new Error("Erro ao excluir conversa");
-            }
+            await deleteConversation(chatId);
 
             setChats((prevChats) =>
                 prevChats.filter((chat) => chat.id !== chatId)
@@ -121,7 +65,8 @@ function HomePage(){
         } catch (error) {
             console.error("Erro ao excluir chat:", error);
         }
-    };
+    }
+    
     return (
         <div className="home">
 
