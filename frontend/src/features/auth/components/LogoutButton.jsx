@@ -10,7 +10,7 @@ function LogoutButton() {
                 method: "DELETE",
                 credentials: "include"
             }
-            const response = await apiFetch("auth/user_logout/", options);
+            const response = await apiFetch("auth/logout/", options);
 
             if (response.ok) {
                 navigate("/login/");

@@ -20,6 +20,7 @@ from app.auth.service import (
 )
 from app.core.database import get_db
 from app.core.security import create_token
+from app.core.limiter import limiter
 
 load_dotenv()
 
@@ -30,8 +31,9 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 @router.post(
-    "/user_registration/", status_code=HTTPStatus.CREATED, response_model=PublicUser
+    "/register/", status_code=HTTPStatus.CREATED, response_model=PublicUser
 )
+@limiter.limit("60/minute")
 def user_registration(user: FormRegister, session: Session = Depends(get_db)):
 
     validate_user_registration_credentials(user, session)
@@ -43,7 +45,8 @@ def user_registration(user: FormRegister, session: Session = Depends(get_db)):
     }
 
 
-@router.post("/user_login/", status_code=HTTPStatus.OK)
+@router.post("/login/", status_code=HTTPStatus.OK)
+@limiter.limit("60/minute")
 def user_login(
     data: RequestLogin, response: Response, session: Session = Depends(get_db)
 ):
@@ -51,7 +54,8 @@ def user_login(
     user_validated = validate_user_login_credentials(data, session)
 
     access_token = create_token(
-        data={"id": user_validated["id"]}
+        data={"id": user_validated["id"]},
+        time_exp=ACCESS_TOKEN_EXPIRE_MINUTES
     )
     refresh_token = create_refresh_token(data.email, session)
 
@@ -59,7 +63,8 @@ def user_login(
 
 
 
-@router.post("/refresh_token/", status_code=HTTPStatus.OK)
+@router.post("/refresh/", status_code=HTTPStatus.OK)
+@limiter.limit("60/minute")
 def refresh_token(
     response: Response, 
     session: Session = Depends(get_db),
@@ -71,9 +76,8 @@ def refresh_token(
     subject_id = validate_user_session(subject_key_hash, session, response)
 
     access_token = create_token(
-        data={
-            "id": subject_id,
-        }
+        data={"id": subject_id},
+        time_exp=ACCESS_TOKEN_EXPIRE_MINUTES
     )
 
     refresh_token = update_refresh_token(subject_key_hash, subject_id, session)
@@ -82,7 +86,8 @@ def refresh_token(
 
 
 
-@router.delete("/user_logout/", status_code=HTTPStatus.OK)
+@router.delete("/logout/", status_code=HTTPStatus.OK)
+@limiter.limit("60/minute")
 def logout_user(
     response: Response,
     session: Session = Depends(get_db),

@@ -6,7 +6,7 @@ export async function getChats() {
         }
         
     const response = await apiFetch(
-        "conversation/read_conversation/",
+        "conversation/",
         options
     );
 
@@ -25,7 +25,7 @@ export async function getChatMessages(chatId) {
     }
 
     const response = await apiFetch(
-        `conversation/user_chat/${chatId}/`,
+        `conversation/${chatId}/messages`,
         options
     );
 
@@ -44,7 +44,7 @@ export async function deleteConversation(chatId) {
     }
 
     const response = await apiFetch(
-        `conversation/delete_conversation/${chatId}`,
+        `conversation/${chatId}`,
         options
     );
 

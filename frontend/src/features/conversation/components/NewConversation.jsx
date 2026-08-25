@@ -37,7 +37,7 @@ function NewConversation({ onConversationCreated }) {
                     body: formData
                 }
             const documentResponse = await apiFetch(
-                "document/upload_file/",
+                "document/",
                 optionsDocuments
             );
 
@@ -61,7 +61,7 @@ function NewConversation({ onConversationCreated }) {
                 }
 
             const conversationResponse = await apiFetch(
-                "conversation/create_conversation/",
+                "conversation/",
                 optionsConversation
             );
 

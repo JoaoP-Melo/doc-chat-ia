@@ -46,7 +46,7 @@ function Chat({ messages, selectedChat, handleChatClick }) {
             }
 
             await apiFetch(
-                "conversation/user_question/",
+                "conversation/question/",
                 options
             );
 

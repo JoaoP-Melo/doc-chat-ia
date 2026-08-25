@@ -14,18 +14,22 @@ from app.conversation.service import (
     make_question,
     read_conversations_in_db,
 )
+from app.document.service import delete_file_in_db
 from app.core.database import get_db
 from app.core.security import get_current_user
 from app.conversation.models import Messages
 from app.conversation.schemas import (
     ConversationCreate, 
-    QuestionRequest
+    QuestionRequest,
+    PublicConversation
 )
+from app.core.limiter import limiter
 
 router = APIRouter(prefix="/conversation", tags=["conversation"])
 
 
-@router.post("/create_conversation/", status_code=HTTPStatus.CREATED)
+@router.post("", status_code=HTTPStatus.CREATED, response_model=PublicConversation)
+@limiter.limit("60/minute")
 def create_conversation(
     data: ConversationCreate,
     session: Session = Depends(get_db),
@@ -36,10 +40,14 @@ def create_conversation(
         user_id=current_user.id, document_id=data.document_id, session=session
     )
 
-    return new_conversation
+    return PublicConversation(
+        id=new_conversation.id,
+        title=new_conversation.title
+    )
 
 
-@router.get("/read_conversation/", status_code=HTTPStatus.OK)
+@router.get("", status_code=HTTPStatus.OK)
+@limiter.limit("60/minute")
 def read_conversation(
     session: Session = Depends(get_db), current_user=Depends(get_current_user)
 ):
@@ -48,24 +56,38 @@ def read_conversation(
         user_id=current_user.id, session=session
     )
 
-    return {"Chats": conversations_in_db}
+    return {
+    "Chats": [
+        PublicConversation(
+            id=chat.id,
+            title=chat.title
+        )
+        for chat in conversations_in_db
+    ]
+}
 
 
-@router.delete("/delete_conversation/{conversation_id}", status_code=HTTPStatus.OK)
+@router.delete("/{conversation_id}/", status_code=HTTPStatus.OK)
+@limiter.limit("60/minute")
 def delete_conversation(
     conversation_id: int,
     session: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
 
-    delete_conversation_in_db(
+    conversation_document_id = delete_conversation_in_db(
         conversation_id=conversation_id, user_id=current_user.id, session=session
     )
 
-    return {"Message": "Chat deleted"}
+    delete_file_in_db(
+        conversation_document_id,
+        current_user.id,
+        session
+    )
 
 
-@router.post("/user_question/", status_code=HTTPStatus.OK)
+@router.post("/question/", status_code=HTTPStatus.OK)
+@limiter.limit("60/minute")
 def user_question(
     data: QuestionRequest,
     session: Session = Depends(get_db),
@@ -83,7 +105,8 @@ def user_question(
     return {"Message": output}
 
 
-@router.get("/user_chat/{chat_id}/")
+@router.get("/{chat_id}/messages")
+@limiter.limit("60/minute")
 def get_chat_messages(
     chat_id: int,
     current_user = Depends(get_current_user),

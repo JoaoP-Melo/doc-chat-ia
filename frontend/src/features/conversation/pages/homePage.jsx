@@ -1,5 +1,5 @@
 import '../style/conversation.css'
-import LogoutButton from "../../auth/services/LogoutButton";
+import LogoutButton from "../../auth/components/LogoutButton";
 import Chat from "../components/ChatMessages";
 import NewConversation from "../components/NewConversation";
 import { getChatMessages, getChats, deleteConversation } from "../services/conversationService";

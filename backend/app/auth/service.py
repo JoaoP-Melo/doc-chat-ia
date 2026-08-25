@@ -7,6 +7,7 @@ import secrets
 from dotenv import load_dotenv
 from fastapi import HTTPException, Response
 from jwt import decode
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 from pwdlib import PasswordHash
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -16,7 +17,7 @@ from app.auth.schemas import FormRegister, RequestLogin
 from app.core.security import create_token
 
 load_dotenv()
-ACCESS_TOKEN_EXPIRE_MINUTES = 15
+REFRESH_TOKEN_EXPIRE_MINUTES = 10080
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 pwd_context = PasswordHash.recommended()
@@ -88,7 +89,7 @@ def create_refresh_token(user_email, session: Session):
     key = secrets.token_urlsafe(64)
     key_hash = hashlib.sha256(key.encode()).hexdigest()
 
-    refresh_token = create_token(data={"key": key})
+    refresh_token = create_token(data={"key": key}, time_exp=REFRESH_TOKEN_EXPIRE_MINUTES)
 
     user_in_db = session.scalar(select(Users).where(Users.email == user_email))
 
@@ -147,9 +148,29 @@ def decode_refresh_token(refresh_token):
             status_code=HTTPStatus.UNAUTHORIZED, 
             detail="Token not found"
         )
-
-    payload = decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
-
+    
+    try:
+        payload = decode(
+            refresh_token,
+            SECRET_KEY,
+            algorithms=[ALGORITHM]
+        )
+    except ExpiredSignatureError:
+        raise HTTPException(
+            status_code=HTTPStatus.UNAUTHORIZED,
+            detail="Token expired"
+        )    
+    except InvalidTokenError:
+        raise HTTPException(
+            status_code=HTTPStatus.UNAUTHORIZED,
+            detail="Invalid token"
+        )
+    except Exception:
+        raise HTTPException(
+            status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
+        )
+    
     subject_key = payload.get("key")
     subject_key_hash = hashlib.sha256(subject_key.encode()).hexdigest()
 

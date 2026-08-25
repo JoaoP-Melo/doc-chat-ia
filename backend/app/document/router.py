@@ -12,11 +12,13 @@ from app.document.service import (
     get_files_in_db,
     process_docs,
 )
+from app.core.limiter import limiter
 
 router = APIRouter(prefix="/document", tags=["Document"])
 
 
-@router.post("/upload_file/", status_code=HTTPStatus.OK)
+@router.post("", status_code=HTTPStatus.OK)
+@limiter.limit("60/minute")
 async def upload_file(
     file: UploadFile, session=Depends(get_db), current_user=Depends(get_current_user)
 ):
@@ -33,20 +35,12 @@ async def upload_file(
 
     process_docs(documento_id=new_document.id, file_text=text, session=session)
 
-    return {"id": new_document.id}
 
 
-@router.delete("/delete_file/", status_code=HTTPStatus.OK)
+@router.delete("", status_code=HTTPStatus.OK)
+@limiter.limit("60/minute")
 def delete_file(
     document_id: int, session=Depends(get_db), current_user=Depends(get_current_user)
 ):
     delete_file_in_db(document_id=document_id, user_id=current_user.id, session=session)
 
-    return {"Message": "File Deleted"}
-
-
-@router.get("/read_file/", status_code=HTTPStatus.OK)
-def read_files(session=Depends(get_db), current_user=Depends(get_current_user)):
-    documents_in_db = get_files_in_db(user_id=current_user.id, session=session)
-
-    return {"Documents": documents_in_db}

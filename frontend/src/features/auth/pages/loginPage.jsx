@@ -13,7 +13,7 @@ function LoginPage() {
         event.preventDefault();
 
         const response = await fetch(
-            "http://localhost:8000/auth/user_login/",
+            "http://localhost:8000/auth/login/",
             {
                 method: "POST",
 

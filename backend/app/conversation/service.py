@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.conversation.models import Conversations, Messages
 from app.document.models import Documents, DocumentsChunks
+from app.core.document_assistant import SYSTEM_PROMPT
 
 model = SentenceTransformer("all-MiniLM-L6-v2")
 load_dotenv()
@@ -60,6 +61,8 @@ def delete_conversation_in_db(conversation_id, user_id, session: Session):
 
     session.delete(conversation_in_db)
     session.commit()
+
+    return conversation_in_db.document_id
 
 
 def get_user_messages(conversation_id, session: Session):
@@ -120,8 +123,7 @@ def make_question(document_context, message_history, question):
     messages = [
         {
             "role": "system",
-            "content": "Você é um assistente que responde perguntas com base "
-            "exclusivamente no contexto dos documentos fornecidos.",
+            "content": SYSTEM_PROMPT
         },
         *message_history,
         {
