@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends, UploadFile
+from fastapi import APIRouter, Depends, UploadFile, Request
 
 from app.core.database import get_db
 from app.core.security import get_current_user
@@ -20,7 +20,10 @@ router = APIRouter(prefix="/document", tags=["Document"])
 @router.post("", status_code=HTTPStatus.OK)
 @limiter.limit("60/minute")
 async def upload_file(
-    file: UploadFile, session=Depends(get_db), current_user=Depends(get_current_user)
+    request: Request,
+    file: UploadFile, 
+    session=Depends(get_db), 
+    current_user=Depends(get_current_user)
 ):
     extension = get_file_extension(file.filename)
 
@@ -40,7 +43,10 @@ async def upload_file(
 @router.delete("", status_code=HTTPStatus.OK)
 @limiter.limit("60/minute")
 def delete_file(
-    document_id: int, session=Depends(get_db), current_user=Depends(get_current_user)
+    request: Request,
+    document_id: int, 
+    session=Depends(get_db), 
+    current_user=Depends(get_current_user)
 ):
     delete_file_in_db(document_id=document_id, user_id=current_user.id, session=session)
 

@@ -12,15 +12,19 @@ def test_create_conversation_success(
     client_override.cookies.set("refresh_token", refresh_token)
 
     response = client_override.post(
-        "conversation/create_conversation/",
-        params={"document_id": add_document_in_db.id},
+        "conversation/",
+        json={"document_id": add_document_in_db.id},
     )
 
     assert response.status_code == HTTPStatus.CREATED
 
-    conversation_in_db = session.scalars(select(Conversations)).all()
+    conversation_in_db = session.scalar(select(Conversations))
 
-    assert len(conversation_in_db) == 1
+    assert conversation_in_db is not None
+    assert response.json() == {
+        "id": conversation_in_db.id,
+        "title": add_document_in_db.name,
+    }
 
 
 def test_read_conversation_success(
@@ -29,7 +33,7 @@ def test_read_conversation_success(
     client_override.cookies.set("access_token", access_token)
     client_override.cookies.set("refresh_token", refresh_token)
 
-    response = client_override.get("conversation/read_conversation/")
+    response = client_override.get("conversation/")
 
     assert response.status_code == HTTPStatus.OK
 
@@ -38,15 +42,16 @@ def test_read_conversation_success(
     assert len(conversation_in_db) == 1
 
 
-def test_read_conversation_not_found(
+def test_read_conversation_returns_empty_list(
     client_override, access_token, refresh_token, session
 ):
     client_override.cookies.set("access_token", access_token)
     client_override.cookies.set("refresh_token", refresh_token)
 
-    response = client_override.get("conversation/read_conversation/")
+    response = client_override.get("conversation/")
 
-    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {"Chats": []}
 
 
 def test_delete_conversation_success(
@@ -55,10 +60,7 @@ def test_delete_conversation_success(
     client_override.cookies.set("access_token", access_token)
     client_override.cookies.set("refresh_token", refresh_token)
 
-    response = client_override.delete(
-        "conversation/delete_conversation/",
-        params={"conversation_id": add_conversation_in_db.id},
-    )
+    response = client_override.delete(f"conversation/{add_conversation_in_db.id}/")
 
     assert response.status_code == HTTPStatus.OK
 
@@ -76,12 +78,40 @@ def test_delete_conversation_not_found(
     client_override.cookies.set("access_token", access_token)
     client_override.cookies.set("refresh_token", refresh_token)
 
-    response = client_override.delete(
-        "conversation/delete_conversation/", params={"conversation_id": 0}
-    )
+    response = client_override.delete("conversation/0/")
 
     assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {"detail": "Conversation not found"}
 
     conversation_in_db = session.scalar(select(Conversations))
 
     assert not conversation_in_db
+
+
+def test_get_chat_messages_success(
+    client_override, access_token, refresh_token, add_messages_in_db
+):
+    client_override.cookies.set("access_token", access_token)
+    client_override.cookies.set("refresh_token", refresh_token)
+
+    conversation_id = add_messages_in_db[0].conversation_id
+    response = client_override.get(f"conversation/{conversation_id}/messages")
+
+    assert response.status_code == HTTPStatus.OK
+    assert [
+        {
+            "id": message["id"],
+            "conversation_id": message["conversation_id"],
+            "role": message["role"],
+            "content": message["content"],
+        }
+        for message in response.json()["Messages"]
+    ] == [
+        {
+            "id": message.id,
+            "conversation_id": message.conversation_id,
+            "role": message.role,
+            "content": message.content,
+        }
+        for message in add_messages_in_db
+    ]

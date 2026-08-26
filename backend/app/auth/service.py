@@ -30,6 +30,18 @@ def get_password_hash(password: str):
 def verify_password(password: str, hashed_password: str):
     return pwd_context.verify(password, hashed_password)
 
+def revoke_session(session: Session, refresh_token_hash: str, ):
+    auth_session = session.scalar(
+        select(AuthSessions).where(
+            AuthSessions.refresh_token_hash == refresh_token_hash
+        )
+    )
+
+    if auth_session is None:
+        return
+
+    auth_session.revoked = True
+    session.commit()
 
 def validate_user_registration_credentials(user: FormRegister, session: Session):
 
@@ -196,6 +208,8 @@ def validate_user_session(key_hash, session: Session, response: Response):
             )
 
         if existing_session.expires_at <= datetime.now():
+            revoke_session(session,key_hash)
+            
             response.delete_cookie("access_token")
             response.delete_cookie("refresh_token")
 
@@ -220,7 +234,7 @@ def update_refresh_token(key_hash, user_id, session):
     new_key = secrets.token_urlsafe(64)
     new_key_hash = hashlib.sha256(new_key.encode()).hexdigest()
 
-    refresh_token = create_token(data={"key": new_key})
+    refresh_token = create_token(data={"key": new_key}, time_exp=REFRESH_TOKEN_EXPIRE_MINUTES)
 
     session_in_db = session.scalar(
         select(AuthSessions).where(

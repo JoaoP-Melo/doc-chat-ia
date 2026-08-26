@@ -2,7 +2,7 @@ from http import HTTPStatus
 import os
 
 from dotenv import load_dotenv
-from fastapi import APIRouter, Cookie, Depends, Response
+from fastapi import APIRouter, Cookie, Depends, Response, Request
 from sqlalchemy.orm import Session
 
 from app.auth.schemas import FormRegister, PublicUser, RequestLogin
@@ -34,7 +34,10 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
     "/register/", status_code=HTTPStatus.CREATED, response_model=PublicUser
 )
 @limiter.limit("60/minute")
-def user_registration(user: FormRegister, session: Session = Depends(get_db)):
+def user_registration(
+    request: Request,
+    user: FormRegister, 
+    session: Session = Depends(get_db)):
 
     validate_user_registration_credentials(user, session)
     add_user_in_db(user, session)
@@ -48,7 +51,9 @@ def user_registration(user: FormRegister, session: Session = Depends(get_db)):
 @router.post("/login/", status_code=HTTPStatus.OK)
 @limiter.limit("60/minute")
 def user_login(
-    data: RequestLogin, response: Response, session: Session = Depends(get_db)
+    request: Request,
+    data: RequestLogin, response: Response, 
+    session: Session = Depends(get_db)
 ):
 
     user_validated = validate_user_login_credentials(data, session)
@@ -66,6 +71,7 @@ def user_login(
 @router.post("/refresh/", status_code=HTTPStatus.OK)
 @limiter.limit("60/minute")
 def refresh_token(
+    request: Request,
     response: Response, 
     session: Session = Depends(get_db),
     refresh_token: str | None = Cookie(default=None),
@@ -89,6 +95,7 @@ def refresh_token(
 @router.delete("/logout/", status_code=HTTPStatus.OK)
 @limiter.limit("60/minute")
 def logout_user(
+    request: Request,
     response: Response,
     session: Session = Depends(get_db),
     access_token: str | None = Cookie(default=None),

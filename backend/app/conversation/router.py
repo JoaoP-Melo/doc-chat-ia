@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
@@ -31,6 +31,7 @@ router = APIRouter(prefix="/conversation", tags=["conversation"])
 @router.post("", status_code=HTTPStatus.CREATED, response_model=PublicConversation)
 @limiter.limit("60/minute")
 def create_conversation(
+    request: Request,
     data: ConversationCreate,
     session: Session = Depends(get_db),
     current_user=Depends(get_current_user),
@@ -49,7 +50,9 @@ def create_conversation(
 @router.get("", status_code=HTTPStatus.OK)
 @limiter.limit("60/minute")
 def read_conversation(
-    session: Session = Depends(get_db), current_user=Depends(get_current_user)
+    request: Request,
+    session: Session = Depends(get_db), 
+    current_user=Depends(get_current_user)
 ):
 
     conversations_in_db = read_conversations_in_db(
@@ -70,6 +73,7 @@ def read_conversation(
 @router.delete("/{conversation_id}/", status_code=HTTPStatus.OK)
 @limiter.limit("60/minute")
 def delete_conversation(
+    request: Request,
     conversation_id: int,
     session: Session = Depends(get_db),
     current_user=Depends(get_current_user),
@@ -89,6 +93,7 @@ def delete_conversation(
 @router.post("/question/", status_code=HTTPStatus.OK)
 @limiter.limit("60/minute")
 def user_question(
+    request: Request,
     data: QuestionRequest,
     session: Session = Depends(get_db),
     current_user = Depends(get_current_user),
@@ -108,6 +113,7 @@ def user_question(
 @router.get("/{chat_id}/messages")
 @limiter.limit("60/minute")
 def get_chat_messages(
+    request: Request,
     chat_id: int,
     current_user = Depends(get_current_user),
     session: Session = Depends(get_db),
