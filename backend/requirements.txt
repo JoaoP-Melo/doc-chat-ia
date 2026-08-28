@@ -11,7 +11,7 @@ pwdlib
 pydantic[email]
 pwdlib[argon2]
 PyJWT
-httpx2
+httpx
 pgvector
 python-multipart
 sentence-transformers

@@ -2,6 +2,7 @@ from http import HTTPStatus
 from pathlib import Path
 
 from sqlalchemy import select
+import numpy as np
 
 from app.auth.models import Users
 from app.document.models import Documents, DocumentsChunks
@@ -15,8 +16,9 @@ def test_upload_file_creates_document_and_chunks(
     client_override.cookies.set("access_token", access_token)
     client_override.cookies.set("refresh_token", refresh_token)
     monkeypatch.setattr(
-        "app.document.service.model.encode", lambda _: [0.0] * 384
-    )
+    "app.document.service.model.encode",
+    lambda _: np.array([0.0] * 384)
+)
 
     with open(ASSETS_DIR / "sample.pdf", "rb") as f:
         response = client_override.post(
